@@ -63,8 +63,7 @@ namespace Proks_API.Migrations
                     TransmissionTypeId = table.Column<int>(type: "int", nullable: false),
                     EngineCapacity = table.Column<double>(type: "float", nullable: false),
                     Seats = table.Column<int>(type: "int", nullable: false),
-                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsAvailable = table.Column<bool>(type: "bit", nullable: false)
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
