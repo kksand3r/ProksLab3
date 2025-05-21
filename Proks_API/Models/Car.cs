@@ -30,6 +30,5 @@ namespace Proks_API.Models
         public string? ImagePath { get; set; }
         [NotMapped]
         public IFormFile? CarImage { get; set; }
-        public bool IsAvailable { get; set; } = true;
     }
 }

@@ -11,7 +11,7 @@ using Proks_API.Services;
 namespace Proks_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250521085911_init")]
+    [Migration("20250521111056_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -64,9 +64,6 @@ namespace Proks_API.Migrations
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Model")
                         .IsRequired()
