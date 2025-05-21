@@ -1,0 +1,180 @@
+﻿@page "/cars/edit/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using Proks_UI.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+
+<style>
+    h3 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    form {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 1rem;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+        color: #555;
+    }
+
+    input,
+    select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .button-row {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .btn {
+        padding: 0.5rem 1.2rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
+
+<h3>Edit Car</h3>
+
+@if (car == null || brands == null || fuelTypes == null || transmissionTypes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="car" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label>Brand</label>
+            <select @bind="car.BrandId">
+                <option value="">-- Select Brand --</option>
+                @foreach (var brand in brands)
+                {
+                    <option value="@brand.Id">@brand.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Model</label>
+            <InputText @bind-Value="car.Model" />
+        </div>
+
+        <div class="form-group">
+            <label>Year</label>
+            <InputNumber @bind-Value="car.Year" />
+        </div>
+
+        <div class="form-group">
+            <label>Car Number</label>
+            <InputText @bind-Value="car.CarNumber" />
+        </div>
+
+        <div class="form-group">
+            <label>Fuel Type</label>
+            <select @bind="car.FuelTypeId">
+                <option value="">-- Select Fuel Type --</option>
+                @foreach (var fuel in fuelTypes)
+                {
+                    <option value="@fuel.Id">@fuel.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Transmission Type</label>
+            <select @bind="car.TransmissionTypeId">
+                <option value="">-- Select Transmission --</option>
+                @foreach (var t in transmissionTypes)
+                {
+                    <option value="@t.Id">@t.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Engine Capacity</label>
+            <InputNumber @bind-Value="car.EngineCapacity" step="0.1" />
+        </div>
+
+        <div class="form-group">
+            <label>Seats</label>
+            <InputNumber @bind-Value="car.Seats" />
+        </div>
+
+
+        <div class="button-row">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CarDto car;
+    private List<BrandDto> brands;
+    private List<FuelTypeDto> fuelTypes;
+    private List<FuelTypeDto> transmissionTypes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        car = await Http.GetFromJsonAsync<CarDto>($"api/cars/{Id}");
+        brands = await Http.GetFromJsonAsync<List<BrandDto>>("api/brands");
+        fuelTypes = await Http.GetFromJsonAsync<List<FuelTypeDto>>("api/fueltypes");
+        transmissionTypes = await Http.GetFromJsonAsync<List<FuelTypeDto>>("api/transmissiontypes");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await Http.PutAsJsonAsync($"api/cars/{Id}", car);
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/cars");
+        }
+        else
+        {
+            Console.Error.WriteLine("Error updating car");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/cars");
+    }
+}

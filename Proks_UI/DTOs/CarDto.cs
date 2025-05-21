@@ -1,6 +1,4 @@
-﻿using Proks_API.Models;
-
-namespace Proks_API.DTOs
+﻿namespace Proks_UI.DTOs
 {
     public class CarDto
     {
@@ -17,5 +15,4 @@ namespace Proks_API.DTOs
         public double EngineCapacity { get; set; }
         public int Seats { get; set; }
     }
-
 }

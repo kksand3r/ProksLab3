@@ -1,0 +1,116 @@
+﻿@page "/cars/delete/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using Proks_UI.DTOs
+
+<style>
+    h3 {
+        color: #b22222;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .delete-container {
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff5f5;
+        box-shadow: 0 0 8px rgba(178, 34, 34, 0.2);
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-size: 1.1rem;
+    }
+
+        ul li {
+            margin: 0.5rem 0;
+        }
+
+    .btn {
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        border: none;
+        margin: 0 0.5rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-danger {
+        background-color: #b22222;
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background-color: #800000;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background-color: #565e64;
+        }
+</style>
+
+<h3>Delete Car</h3>
+
+@if (car == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="delete-container">
+        <p>Are you sure you want to delete this car?</p>
+        <ul>
+            <li><strong>Model:</strong> @car.Model</li>
+            <li><strong>Year:</strong> @car.Year</li>
+            <li><strong>Number:</strong> @car.CarNumber</li>
+        </ul>
+
+        <button @onclick="DeleteCar" class="btn btn-danger">Delete</button>
+        <button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CarDto? car;
+
+    protected override async Task OnInitializedAsync()
+    {
+        car = await Http.GetFromJsonAsync<CarDto>($"api/cars/{Id}");
+    }
+
+    private async Task DeleteCar()
+    {
+        var response = await Http.DeleteAsync($"api/cars/{Id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/cars");
+        }
+        else
+        {
+            Console.Error.WriteLine("Failed to delete car.");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/cars");
+    }
+}

@@ -1,0 +1,291 @@
+﻿@page "/cars"
+@inject HttpClient Http
+@using Proks_UI.DTOs
+@inject NavigationManager NavManager
+
+<style>
+    h3 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        margin: 2px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+        .table th, .table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            user-select: none;
+        }
+
+        .table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+    .table-striped tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .top-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        align-items: center;
+    }
+
+    .filter-input {
+        padding: 5px;
+        font-size: 1rem;
+        width: 200px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .pagination {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+        .pagination button {
+            margin: 0 3px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: white;
+            cursor: pointer;
+        }
+
+            .pagination button.active {
+                background-color: #007bff;
+                color: white;
+                border-color: #007bff;
+            }
+</style>
+
+<h3>Cars List</h3>
+
+<div class="top-actions">
+    <div>
+        <input class="filter-input" placeholder="Filter by Brand" value="@_filterBrand" @oninput="OnBrandFilterChanged" />
+        <input class="filter-input" placeholder="Filter by Model" value="@_filterModel" @oninput="OnModelFilterChanged" style="margin-left:10px;" />
+    </div>
+
+    <button class="btn btn-primary" @onclick='() => NavManager.NavigateTo("/cars/create")'>
+        + Add New Car
+    </button>
+</div>
+
+@if (pagedCars == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!pagedCars.Any())
+{
+    <p>No cars found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th @onclick="() => SortByColumn(nameof(CarDto.BrandName))">
+                    Brand @SortIndicator(nameof(CarDto.BrandName))
+                </th>
+                <th @onclick="() => SortByColumn(nameof(CarDto.Model))">
+                    Model @SortIndicator(nameof(CarDto.Model))
+                </th>
+                <th @onclick="() => SortByColumn(nameof(CarDto.Year))">
+                    Year @SortIndicator(nameof(CarDto.Year))
+                </th>
+                <th>Car Number</th>
+                <th>Fuel</th>
+                <th>Transmission</th>
+                <th>Seats</th>
+                <th style="width: 160px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var car in pagedCars)
+            {
+                <tr>
+                    <td>@car.BrandName</td>
+                    <td>@car.Model</td>
+                    <td>@car.Year</td>
+                    <td>@car.CarNumber</td>
+                    <td>@car.FuelTypeName</td>
+                    <td>@car.TransmissionTypeName</td>
+                    <td>@car.Seats</td>
+                    <td>
+                        <button class="btn btn-secondary" @onclick="@(() => EditCar(car.Id))">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteCar(car.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <button @onclick="PreviousPage" disabled="@(!CanPrevious)">Prev</button>
+        @RenderPaginationButtons()
+        <button @onclick="NextPage" disabled="@(!CanNext)">Next</button>
+    </div>
+}
+
+@code {
+    private List<CarDto> cars = new();
+
+    private string _filterBrand = string.Empty;
+    private string _filterModel = string.Empty;
+
+    private IEnumerable<CarDto> filteredCars => cars
+        .Where(c => string.IsNullOrWhiteSpace(_filterBrand) || c.BrandName.Contains(_filterBrand, StringComparison.OrdinalIgnoreCase))
+        .Where(c => string.IsNullOrWhiteSpace(_filterModel) || c.Model.Contains(_filterModel, StringComparison.OrdinalIgnoreCase));
+
+    private IEnumerable<CarDto> sortedCars => SortCars(filteredCars);
+
+    private IEnumerable<CarDto> pagedCars => sortedCars.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private string currentSortColumn = nameof(CarDto.BrandName);
+    private bool sortAscending = true;
+
+    private int CurrentPage = 1;
+    private int PageSize = 5;
+
+    private int TotalPages => (int)Math.Ceiling((double)filteredCars.Count() / PageSize);
+
+    private bool CanPrevious => CurrentPage > 1;
+    private bool CanNext => CurrentPage < TotalPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cars = await Http.GetFromJsonAsync<List<CarDto>>("api/cars");
+    }
+
+    void EditCar(int id) => NavManager.NavigateTo($"/cars/edit/{id}");
+    void DeleteCar(int id) => NavManager.NavigateTo($"/cars/delete/{id}");
+
+    private void OnBrandFilterChanged(ChangeEventArgs e)
+    {
+        _filterBrand = e.Value?.ToString() ?? string.Empty;
+        FilterChanged();
+    }
+
+    private void OnModelFilterChanged(ChangeEventArgs e)
+    {
+        _filterModel = e.Value?.ToString() ?? string.Empty;
+        FilterChanged();
+    }
+
+    private void FilterChanged()
+    {
+        CurrentPage = 1;
+        StateHasChanged();
+    }
+
+    private void SortByColumn(string columnName)
+    {
+        if (currentSortColumn == columnName)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            currentSortColumn = columnName;
+            sortAscending = true;
+        }
+        CurrentPage = 1;
+    }
+
+    private IEnumerable<CarDto> SortCars(IEnumerable<CarDto> list)
+    {
+        return (currentSortColumn, sortAscending) switch
+        {
+            (nameof(CarDto.BrandName), true) => list.OrderBy(c => c.BrandName),
+            (nameof(CarDto.BrandName), false) => list.OrderByDescending(c => c.BrandName),
+
+            (nameof(CarDto.Model), true) => list.OrderBy(c => c.Model),
+            (nameof(CarDto.Model), false) => list.OrderByDescending(c => c.Model),
+
+            (nameof(CarDto.Year), true) => list.OrderBy(c => c.Year),
+            (nameof(CarDto.Year), false) => list.OrderByDescending(c => c.Year),
+
+            _ => list
+        };
+    }
+
+    private void PreviousPage()
+    {
+        if (CanPrevious)
+        {
+            CurrentPage--;
+            StateHasChanged();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (CanNext)
+        {
+            CurrentPage++;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToPage(int page)
+    {
+        CurrentPage = page;
+        StateHasChanged();
+    }
+
+    private RenderFragment SortIndicator(string columnName) => builder =>
+    {
+        if (currentSortColumn == columnName)
+        {
+            var arrow = sortAscending ? "▲" : "▼";
+            builder.AddContent(0, arrow);
+        }
+    };
+
+    private RenderFragment RenderPaginationButtons() => builder =>
+    {
+        for (int i = 1; i <= TotalPages; i++)
+        {
+            var pageNumber = i;
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", i == CurrentPage ? "active" : "");
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => GoToPage(pageNumber)));
+            builder.AddContent(3, i.ToString());
+            builder.CloseElement();
+        }
+    };
+}

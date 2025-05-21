@@ -11,7 +11,7 @@ using Proks_API.Services;
 namespace Proks_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250521111056_init")]
+    [Migration("20250521151047_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -39,6 +39,28 @@ namespace Proks_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Audi"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Mercedes-Benz"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "BMW"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Volkswagen"
+                        });
                 });
 
             modelBuilder.Entity("Proks_API.Models.Car", b =>
@@ -61,9 +83,6 @@ namespace Proks_API.Migrations
 
                     b.Property<int>("FuelTypeId")
                         .HasColumnType("int");
-
-                    b.Property<string>("ImagePath")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Model")
                         .IsRequired()
@@ -104,6 +123,23 @@ namespace Proks_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FuelTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Бензин"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Дизель"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Електричний"
+                        });
                 });
 
             modelBuilder.Entity("Proks_API.Models.TransmissionType", b =>
@@ -121,6 +157,18 @@ namespace Proks_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TransmissionTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Механіка"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Автомат"
+                        });
                 });
 
             modelBuilder.Entity("Proks_API.Models.Car", b =>

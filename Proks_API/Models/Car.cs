@@ -26,9 +26,5 @@ namespace Proks_API.Models
         public double EngineCapacity { get; set; }
         [Required]
         public int Seats { get; set; }
-
-        public string? ImagePath { get; set; }
-        [NotMapped]
-        public IFormFile? CarImage { get; set; }
     }
 }

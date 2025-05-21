@@ -25,10 +25,23 @@ namespace Proks_API.Controllers
                 .Include(c => c.Brand)
                 .Include(c => c.FuelType)
                 .Include(c => c.TransmissionType)
-                .ToListAsync();
+                .Select(c => new CarDto
+                {
+                    Id = c.Id,
+                    BrandId = c.BrandId,
+                    BrandName = c.Brand.Name,
+                    Model = c.Model,
+                    Year = c.Year,
+                    CarNumber = c.CarNumber,
+                    FuelTypeId = c.FuelTypeId,
+                    FuelTypeName = c.FuelType.Name,
+                    TransmissionTypeId = c.TransmissionTypeId,
+                    TransmissionTypeName = c.TransmissionType.Name,
+                    EngineCapacity = c.EngineCapacity,
+                    Seats = c.Seats,
+                }).ToListAsync();
 
-            var carDtos = cars.Select(c => ToDto(c)).ToList();
-            return Ok(carDtos);
+            return Ok(cars);
         }
 
         // GET: api/Cars/5
@@ -94,7 +107,6 @@ namespace Proks_API.Controllers
             car.TransmissionTypeId = carDto.TransmissionTypeId;
             car.EngineCapacity = carDto.EngineCapacity;
             car.Seats = carDto.Seats;
-            car.ImagePath = carDto.ImagePath;
 
             await _context.SaveChangesAsync();
 
@@ -115,12 +127,25 @@ namespace Proks_API.Controllers
             return NoContent();
         }
 
-        private bool CarExists(int id)
+        // GET: api/Cars/brands
+        [HttpGet("brands")]
+        public async Task<ActionResult<IEnumerable<Brand>>> GetBrands()
         {
-            return _context.Cars.Any(e => e.Id == id);
+            return await _context.Brands.ToListAsync();
         }
 
-        // ✨ Мапінг вручну: Car → CarDto
+        [HttpGet("fueltypes")]
+        public async Task<ActionResult<IEnumerable<FuelType>>> GetFuelTypes()
+        {
+            return await _context.FuelTypes.ToListAsync();
+        }
+
+        [HttpGet("transmissions")]
+        public async Task<ActionResult<IEnumerable<TransmissionType>>> GetTransmissionTypes()
+        {
+            return await _context.TransmissionTypes.ToListAsync();
+        }
+
         private CarDto ToDto(Car car)
         {
             return new CarDto
@@ -134,11 +159,8 @@ namespace Proks_API.Controllers
                 TransmissionTypeId = car.TransmissionTypeId,
                 EngineCapacity = car.EngineCapacity,
                 Seats = car.Seats,
-                ImagePath = car.ImagePath,
             };
         }
-
-        // ✨ Мапінг вручну: CarDto → Car
         private Car FromDto(CarDto dto)
         {
             return new Car
@@ -152,7 +174,6 @@ namespace Proks_API.Controllers
                 TransmissionTypeId = dto.TransmissionTypeId,
                 EngineCapacity = dto.EngineCapacity,
                 Seats = dto.Seats,
-                ImagePath = dto.ImagePath,
             };
         }
     }
