@@ -1,0 +1,111 @@
+﻿@page "/fueltypes"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@using Proks_UI.DTOs
+
+<style>
+    h3 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    a {
+        text-decoration: none;
+        color: #007bff;
+        margin-right: 10px;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f8f8f8;
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+</style>
+
+
+<h3>Fuel Types</h3>
+
+<button class="btn btn-primary" @onclick='() => NavManager.NavigateTo("/fueltype/create")'>+ Add Fuel Type</button>
+
+
+@if (fuelTypes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!fuelTypes.Any())
+{
+    <p>No fuel types available.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fuel in fuelTypes)
+            {
+                <tr>
+                    <td>@fuel.Name</td>
+                    <td>
+                        <button class="btn btn-secondary" @onclick="() => EditFuelType(fuel.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteFuelType(fuel.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<FuelTypeDto>? fuelTypes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        fuelTypes = await Http.GetFromJsonAsync<List<FuelTypeDto>>("api/fueltypes");
+    }
+
+
+    void EditFuelType(int id) => NavManager.NavigateTo($"/fueltypes/edit/{id}");
+
+    void DeleteFuelType(int id) => NavManager.NavigateTo($"/fueltypes/delete/{id}");
+
+}

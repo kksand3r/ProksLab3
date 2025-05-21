@@ -1,0 +1,103 @@
+﻿@page "/brands/delete/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@using Proks_UI.DTOs
+
+<style>
+    h3 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    p {
+        font-size: 1rem;
+        color: #555;
+        max-width: 400px;
+    }
+
+    strong {
+        color: #000;
+    }
+
+    button {
+        padding: 8px 16px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background-color: #a71d2a;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background-color: #565e64;
+        }
+</style>
+
+<h3>Delete Brand</h3>
+
+@if (brand == null)
+{
+    <p><em>Loading brand...</em></p>
+}
+else
+{
+    <p>Are you sure you want to delete the brand <strong>@brand.Name</strong>?</p>
+    <button class="btn btn-danger" @onclick="DeleteConfirmed">Yes, Delete</button>
+    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private BrandDto? brand;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/brands/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            brand = await response.Content.ReadFromJsonAsync<BrandDto>();
+        }
+        else
+        {
+            NavManager.NavigateTo("/brands");
+        }
+    }
+
+    private async Task DeleteConfirmed()
+    {
+        var response = await Http.DeleteAsync($"api/brands/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            NavManager.NavigateTo("/brands");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Failed to delete brand.");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavManager.NavigateTo("/brands");
+    }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+}

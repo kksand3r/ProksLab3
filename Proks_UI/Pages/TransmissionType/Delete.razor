@@ -1,0 +1,81 @@
+﻿@page "/transmissiontypes/delete/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@using Proks_UI.DTOs
+
+<style>
+    h3 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+
+        .btn-danger:hover {
+            background-color: #bd2130;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+        margin-left: 10px;
+    }
+
+        .btn-secondary:hover {
+            background-color: #565e64;
+        }
+</style>
+
+<h3>Delete Transmission Type</h3>
+
+@if (transmissionType == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>Are you sure you want to delete the transmission type <strong>@transmissionType.Name</strong>?</p>
+    <button class="btn-danger" @onclick="DeleteTransmissionType">Delete</button>
+    <button class="btn-secondary" @onclick="Cancel">Cancel</button>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private TransmissionTypeDto? transmissionType;
+
+    protected override async Task OnInitializedAsync()
+    {
+        transmissionType = await Http.GetFromJsonAsync<TransmissionTypeDto>($"api/transmissiontypes/{Id}");
+    }
+
+    private async Task DeleteTransmissionType()
+    {
+        var response = await Http.DeleteAsync($"api/transmissiontypes/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            NavManager.NavigateTo("/transmissiontypes");
+        }
+    }
+
+    private void Cancel() => NavManager.NavigateTo("/transmissiontypes");
+}

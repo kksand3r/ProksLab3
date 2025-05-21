@@ -2,6 +2,8 @@
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Proks_API.Migrations
 {
     /// <inheritdoc />
@@ -62,8 +64,7 @@ namespace Proks_API.Migrations
                     FuelTypeId = table.Column<int>(type: "int", nullable: false),
                     TransmissionTypeId = table.Column<int>(type: "int", nullable: false),
                     EngineCapacity = table.Column<double>(type: "float", nullable: false),
-                    Seats = table.Column<int>(type: "int", nullable: false),
-                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Seats = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -86,6 +87,36 @@ namespace Proks_API.Migrations
                         principalTable: "TransmissionTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Brands",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Audi" },
+                    { 2, "Mercedes-Benz" },
+                    { 3, "BMW" },
+                    { 4, "Volkswagen" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "FuelTypes",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Бензин" },
+                    { 2, "Дизель" },
+                    { 3, "Електричний" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "TransmissionTypes",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Механіка" },
+                    { 2, "Автомат" }
                 });
 
             migrationBuilder.CreateIndex(
