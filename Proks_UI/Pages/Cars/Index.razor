@@ -90,6 +90,16 @@
                 color: white;
                 border-color: #007bff;
             }
+
+    .error-message {
+        margin-top: 1rem;
+        padding: 10px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        border-radius: 4px;
+        user-select: none;
+    }
 </style>
 
 <h3>Cars List</h3>
@@ -104,6 +114,11 @@
         + Add New Car
     </button>
 </div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-message">@ErrorMessage</div>
+}
 
 @if (pagedCars == null)
 {
@@ -167,6 +182,8 @@ else
     private string _filterBrand = string.Empty;
     private string _filterModel = string.Empty;
 
+    private string? ErrorMessage;
+
     private IEnumerable<CarDto> filteredCars => cars
         .Where(c => string.IsNullOrWhiteSpace(_filterBrand) || c.BrandName.Contains(_filterBrand, StringComparison.OrdinalIgnoreCase))
         .Where(c => string.IsNullOrWhiteSpace(_filterModel) || c.Model.Contains(_filterModel, StringComparison.OrdinalIgnoreCase));
@@ -188,7 +205,15 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        cars = await Http.GetFromJsonAsync<List<CarDto>>("api/cars");
+        ErrorMessage = null;
+        try
+        {
+            cars = await Http.GetFromJsonAsync<List<CarDto>>("api/cars");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading cars: {ex.Message}";
+        }
     }
 
     void EditCar(int id) => NavManager.NavigateTo($"/cars/edit/{id}");
