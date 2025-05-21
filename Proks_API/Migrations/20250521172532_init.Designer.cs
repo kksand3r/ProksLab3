@@ -11,7 +11,7 @@ using Proks_API.Services;
 namespace Proks_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250521151047_init")]
+    [Migration("20250521172532_init")]
     partial class init
     {
         /// <inheritdoc />

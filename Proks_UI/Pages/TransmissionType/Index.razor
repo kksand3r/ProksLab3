@@ -50,6 +50,7 @@
         text-decoration: none;
         font-size: 0.9rem;
         margin-bottom: 1rem;
+        cursor: pointer;
     }
 
         .btn-primary:hover {
@@ -84,13 +85,25 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+
+    .alert {
+        padding: 10px 15px;
+        margin-top: 1rem;
+        border-radius: 4px;
+        color: white;
+        background-color: #dc3545; /* червоний фон */
+    }
 </style>
 
 <h3>Transmission Types</h3>
 
-<button class="btn btn-primary" @onclick='() => NavManager.NavigateTo("/transmissiontypes/create")'>+ Add Transmission Type</button>
+<button class="btn-primary" @onclick='() => NavManager.NavigateTo("/transmissiontypes/create")'>+ Add Transmission Type</button>
 
-@if (transmissionTypes == null)
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert">@errorMessage</div>
+}
+else if (transmissionTypes == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -113,8 +126,8 @@ else
                 <tr>
                     <td>@trans.Name</td>
                     <td>
-                        <button class="btn btn-secondary" @onclick="() => EditTransmissionType(trans.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteTransmissionType(trans.Id)">Delete</button>
+                        <button class="btn-secondary" @onclick="() => EditTransmissionType(trans.Id)">Edit</button>
+                        <button class="btn-danger" @onclick="() => DeleteTransmissionType(trans.Id)">Delete</button>
                     </td>
                 </tr>
             }
@@ -124,10 +137,19 @@ else
 
 @code {
     List<TransmissionTypeDto>? transmissionTypes;
+    string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        transmissionTypes = await Http.GetFromJsonAsync<List<TransmissionTypeDto>>("api/transmissiontypes");
+        try
+        {
+            transmissionTypes = await Http.GetFromJsonAsync<List<TransmissionTypeDto>>("api/transmissiontypes");
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Не вдалося завантажити дані: {ex.Message}";
+        }
     }
 
     void EditTransmissionType(int id) => NavManager.NavigateTo($"/transmissiontypes/edit/{id}");

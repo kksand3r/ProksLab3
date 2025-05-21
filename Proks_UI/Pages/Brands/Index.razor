@@ -62,9 +62,23 @@
     .table-striped tr:nth-child(even) {
         background-color: #f9f9f9;
     }
+
+    .error-message {
+        background-color: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
 </style>
 
 <h3>Brands List</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-message">@ErrorMessage</div>
+}
 
 <button class="btn btn-primary" @onclick='() => NavManager.NavigateTo("/brands/create")'>+ Add New Brand</button>
 
@@ -102,10 +116,18 @@ else
 
 @code {
     private List<BrandDto>? brands;
+    private string? ErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        brands = await Http.GetFromJsonAsync<List<BrandDto>>("api/brands");
+        try
+        {
+            brands = await Http.GetFromJsonAsync<List<BrandDto>>("api/brands");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading brands: {ex.Message}";
+        }
     }
 
     void EditBrand(int id) => NavManager.NavigateTo($"/brands/edit/{id}");
